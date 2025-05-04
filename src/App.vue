@@ -1,7 +1,10 @@
 <template>
   <Navbar />
-  <router-view />
+  <transition name="fade" mode="out-in">
+    <router-view />
+  </transition>
 </template>
+
 
 <script setup>
 import Navbar from './components/ComponentNavbar.vue';
@@ -15,5 +18,13 @@ import Navbar from './components/ComponentNavbar.vue';
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
+}
+
+/* Fade-in transition effect */
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.6s ease-in-out;
+}
+.fade-enter, .fade-leave-to {
+  opacity: 0;
 }
 </style>
