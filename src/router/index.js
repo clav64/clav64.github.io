@@ -1,10 +1,14 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Home from '../views/PageHome.vue';
 import Contact from '../views/PageContact.vue';
+import Project1 from '../views/subview-projects/PageProjectOne.vue';
+import Project2 from '../views/subview-projects/PageProjectTwo.vue';
 
 const routes = [
   { path: '/', component: Home, meta:{title:'Home - Chris Lavender BEng (Hons)'} },
   { path: '/contact', component: Contact, meta:{title:'Contact Me'} },
+  { path: '/projects/project1', component: Project1, meta:{title:'Project One - <<title>>'} },
+  { path: '/projects/project2', component: Project2, meta:{title:'Project 2 - <<title>>'} },
 ];
 
 const router = createRouter({
