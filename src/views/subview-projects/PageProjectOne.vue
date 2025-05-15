@@ -1,61 +1,98 @@
 <template>
   <div class="news-container">
     <h1>🔥 Trending on Hacker News</h1>
-    <div class="news-cards">
-      <div v-for="story in stories" :key="story.id" class="news-card">
-        <div class="image-wrapper">
-          <img :src="story.thumbnail || 'default-thumbnail.jpg'" alt="Thumbnail" class="news-image" />
-        </div>
-        <div class="news-content">
+
+    <!-- Mobile Swiper Carousel -->
+    <div v-if="isMobile">
+      <swiper :slidesPerView="1" :spaceBetween="10" pagination>
+        <swiper-slide v-for="story in stories.slice(0, 3)" :key="story.id">
+          <img :src="story.thumbnail" alt="Thumbnail" class="carousel-image" />
           <h2><a :href="story.url" target="_blank">{{ story.title }}</a></h2>
           <p class="story-meta">By <strong>{{ story.by }}</strong> | Score: <strong>{{ story.score }}</strong></p>
-        </div>
-      </div>
+        </swiper-slide>
+      </swiper>
     </div>
-    <p v-if="stories.length === 0">Loading stories...</p>
-    <footer>
-      <p>
-        Data sourced from <a href="https://news.ycombinator.com/" target="_blank">Hacker News</a>.
-      </p>
+
+    <!-- Grid Layout for Remaining Stories -->
+    <div class="news-cards">
+      <a v-for="story in stories.slice(isMobile ? 3 : 0)"
+         :key="story.id"
+         :href="story.url"
+         target="_blank"
+         :class="{ visited: visitedStories.includes(story.id) }"
+         @click="markAsVisited(story.id)"
+         class="news-card">
+        <img :src="story.thumbnail" alt="Thumbnail" class="news-image" />
+        <h3>{{ story.title }}</h3>
+        <p class="story-meta">By <strong>{{ story.by }}</strong> | Score: <strong>{{ story.score }}</strong></p>
+      </a>
+    </div>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+      <p>Data sourced from <a href="https://news.ycombinator.com/" target="_blank">Hacker News</a>.</p>
     </footer>
   </div>
 </template>
 
-
 <script>
+import { Swiper, SwiperSlide } from "swiper/vue";
+import "swiper/css";
+import "swiper/css/pagination";
+
 async function fetchThumbnail(url) {
   try {
-    const apiKey = process.env.VUE_APP_LINKPREVIEW_API_KEY;
-    const response = await fetch(`https://api.linkpreview.net/?key=${apiKey}&q=${encodeURIComponent(url)}`);
-    const data = await response.json();
-    return data.image || "default-thumbnail.jpg";
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+
+    const html = await response.text();
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    const ogImage = doc.querySelector('meta[property="og:image"]')?.content;
+
+    return ogImage || `https://picsum.photos/400/300?random=${Date.now()}`;
   } catch (error) {
     console.error("Thumbnail fetch error:", error);
-    return "default-thumbnail.jpg";
+    return `https://picsum.photos/400/300?random=${Date.now()}`;
   }
 }
 
-
 export default {
+  components: { Swiper, SwiperSlide },
   data() {
-    return { stories: [] };
+    return {
+      stories: [],
+      isMobile: window.innerWidth < 768,
+      visitedStories: JSON.parse(localStorage.getItem("visitedStories")) || [],
+    };
   },
-  async mounted() {
-    const topStoryIds = await fetch("https://hacker-news.firebaseio.com/v0/topstories.json")
-      .then(res => res.json());
+  mounted() {
+    window.addEventListener("resize", this.checkMobile);
+    this.fetchStories();
+  },
+  methods: {
+    checkMobile() {
+      this.isMobile = window.innerWidth < 768;
+    },
+    async fetchStories() {
+      const topStoryIds = await fetch("https://hacker-news.firebaseio.com/v0/topstories.json").then(res => res.json());
+      const top12Ids = topStoryIds.slice(0, 12);
 
-    const top10Ids = topStoryIds.slice(0, 12);
+      const storyPromises = top12Ids.map(async (id) => {
+        const story = await fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`).then(res => res.json());
+        story.thumbnail = story.url ? await fetchThumbnail(story.url) : "default-thumbnail.jpg";
+        return story;
+      });
 
-    const storyPromises = top10Ids.map(async (id) => {
-      const story = await fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`).then(res => res.json());
-      story.thumbnail = story.url ? await fetchThumbnail(story.url) : "default-thumbnail.jpg";
-      return story;
-    });
-
-    this.stories = await Promise.all(storyPromises);
+      this.stories = await Promise.all(storyPromises);
+    },
+    markAsVisited(storyId) {
+      if (!this.visitedStories.includes(storyId)) {
+        this.visitedStories.push(storyId);
+        localStorage.setItem("visitedStories", JSON.stringify(this.visitedStories));
+      }
+    }
   }
 };
-
 </script>
 
 <style>
@@ -73,75 +110,64 @@ h1 {
 
 .news-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
 }
 
 .news-card {
   display: flex;
   flex-direction: column;
   background: #fff;
+  padding: 10px;
   border-radius: 12px;
-  box-shadow: 4px 4px 15px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  transition: transform 0.3s ease-in-out, box-shadow 0.3s;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .news-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 6px 6px 20px rgba(0, 0, 0, 0.15);
-}
-
-.image-wrapper {
-  overflow: hidden;
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 6px 6px 20px rgba(0, 0, 0, 0.2);
 }
 
 .news-image {
   width: 100%;
-  height: 180px;
+  height: 100px;
   object-fit: cover;
-  display: block;
-  transition: opacity 0.3s ease-in-out;
 }
 
-.news-content {
-  padding: 15px;
+.carousel-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 12px;
 }
 
-.news-content h2 {
-  font-size: 1.2rem;
-  margin: 10px 0;
+.visited {
+  opacity: 0.6;
+  filter: grayscale(80%);
 }
 
-.news-content a {
-  text-decoration: none;
-  color: #0077cc;
-}
-
-.news-content a:hover {
-  text-decoration: underline;
-}
-
-.story-meta {
-  font-size: 0.9rem;
-  color: #666;
-}
-
-footer {
+.site-footer {
   margin-top: 40px;
-  padding: 10px;
+  padding: 15px;
   text-align: center;
   background: #f8f9fa;
   border-top: 1px solid #ddd;
   font-size: 0.9rem;
 }
 
-footer a {
+.site-footer a {
   color: #0077cc;
   text-decoration: none;
 }
 
-footer a:hover {
+.site-footer a:hover {
   text-decoration: underline;
+}
+
+@media (min-width: 768px) {
+  .news-cards {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
 }
 </style>
