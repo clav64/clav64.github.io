@@ -5,7 +5,7 @@
     <!-- Mobile Swiper Carousel -->
     <div v-if="isMobile">
       <swiper :slidesPerView="1" :spaceBetween="10" pagination>
-        <swiper-slide v-for="story in stories.slice(0, 3)" :key="story.id">
+        <swiper-slide v-for="story in stories.slice(0, 4)" :key="story.id">
           <img :src="story.thumbnail" alt="Thumbnail" class="carousel-image" />
           <h2><a :href="story.url" target="_blank">{{ story.title }}</a></h2>
           <p class="story-meta">By <strong>{{ story.by }}</strong> | Score: <strong>{{ story.score }}</strong></p>
@@ -15,7 +15,7 @@
 
     <!-- Grid Layout for Remaining Stories -->
     <div class="news-cards">
-      <a v-for="story in stories.slice(isMobile ? 3 : 0)"
+      <a v-for="story in stories.slice(isMobile ? 4 : 0)"
          :key="story.id"
          :href="story.url"
          target="_blank"

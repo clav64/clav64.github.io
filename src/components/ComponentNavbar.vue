@@ -8,7 +8,7 @@
           <span class="arrow" :class="{ 'arrow-down': isDropdownOpen, 'arrow-right': !isDropdownOpen }"></span>
         </router-link>
         <ul class="dropdown-menu" :key="isDropdownOpen" :class="{ 'show': isDropdownOpen }" @click.stop>
-          <li><router-link to="/projects/project1" @click="closeDropdown">Project One</router-link></li>
+          <li><router-link to="/projects/project1" @click="closeDropdown">Project One - Hacker News Trending</router-link></li>
           <li><router-link to="/projects/project2" @click="closeDropdown">Project Two</router-link></li>
         </ul>
       </li>
