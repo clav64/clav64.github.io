@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router';
+import { createRouter, createWebHashHistory } from 'vue-router';
 import Home from '../views/PageHome.vue';
 import Contact from '../views/PageContact.vue';
 import Project1 from '../views/subview-projects/PageProjectOne.vue';
@@ -9,11 +9,11 @@ const routes = [
   { path: '/contact', component: Contact, meta:{title:'Contact Me'} },
   { path: '/projects/project1', component: Project1, meta:{title:'Project One - Hacker News>'} },
   { path: '/projects/project2', component: Project2, meta:{title:'Project 2 - Under Construction'} },
-  { path: '/:catchAll(.*)', redirect: '/' }
+  // { path: '/:catchAll(.*)', redirect: '/' }
 ];
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHashHistory(), // Use hash mode
   routes
 });
 
