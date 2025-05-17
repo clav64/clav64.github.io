@@ -7,8 +7,9 @@ import Project2 from '../views/subview-projects/PageProjectTwo.vue';
 const routes = [
   { path: '/', component: Home, meta:{title:'Home - Chris Lavender BEng (Hons)'} },
   { path: '/contact', component: Contact, meta:{title:'Contact Me'} },
-  { path: '/projects/project1', component: Project1, meta:{title:'Project One - <<title>>'} },
-  { path: '/projects/project2', component: Project2, meta:{title:'Project 2 - <<title>>'} },
+  { path: '/projects/project1', component: Project1, meta:{title:'Project One - Hacker News>'} },
+  { path: '/projects/project2', component: Project2, meta:{title:'Project 2 - Under Construction'} },
+  { path: '/:catchAll(.*)', redirect: '/' }
 ];
 
 const router = createRouter({
