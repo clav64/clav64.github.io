@@ -12,7 +12,6 @@
         </swiper-slide>
       </swiper>
     </div>
-
     <!-- Grid Layout for Remaining Stories -->
     <div class="news-cards">
       <a v-for="story in stories.slice(isMobile ? 4 : 0)"
